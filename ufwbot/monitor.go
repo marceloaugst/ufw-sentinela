@@ -7,6 +7,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"regexp"
@@ -169,8 +170,14 @@ func (m *Monitor) usarSistema() {
 		return err
 	}
 	cli := &http.Client{Timeout: 10 * time.Second}
+	cliIP := &http.Client{Timeout: 10 * time.Second, // alvo por IP: certificado autoassinado
+		Transport: &http.Transport{TLSClientConfig: &tls.Config{InsecureSkipVerify: true}}}
 	m.checarURL = func(u string) error {
-		resp, err := cli.Get(u)
+		c := cli
+		if pu, err := url.Parse(u); err == nil && net.ParseIP(pu.Hostname()) != nil {
+			c = cliIP
+		}
+		resp, err := c.Get(u)
 		if err != nil {
 			return fmt.Errorf("sem resposta")
 		}
@@ -302,7 +309,9 @@ func certificadoExpira(host string) (time.Time, error) {
 		host = net.JoinHostPort(host, "443")
 	}
 	nome, _, _ := net.SplitHostPort(host)
-	c, err := tls.DialWithDialer(&net.Dialer{Timeout: 8 * time.Second}, "tcp", host, &tls.Config{ServerName: nome})
+	// Certificado de IP costuma ser autoassinado: a cadeia não é verificada, só a validade é lida.
+	c, err := tls.DialWithDialer(&net.Dialer{Timeout: 8 * time.Second}, "tcp", host,
+		&tls.Config{ServerName: nome, InsecureSkipVerify: net.ParseIP(nome) != nil})
 	if err != nil {
 		return time.Time{}, err
 	}
