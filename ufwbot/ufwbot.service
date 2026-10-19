@@ -1,0 +1,15 @@
+[Unit]
+Description=Bot do Telegram que bane IPs no ufw
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+# Precisa de root para executar "ufw".
+EnvironmentFile=/etc/ufwrelatorio.env
+ExecStart=/opt/ufw/bot/ufwbot
+WorkingDirectory=/opt/ufw/relatorio
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

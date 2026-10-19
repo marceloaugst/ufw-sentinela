@@ -1,0 +1,22 @@
+# Segredos
+.env
+*.env
+!.env.example
+
+# Binários compilados
+ufwbot/ufwbot
+ufwrelatorio/ufwrelatorio
+
+# Dados gerados em execução (IPs reais, relatórios, caches)
+log/
+*.xlsx
+*.png
+
+# Editores
+*.swp
+*.swo
+
+# Outros projetos que estão na mesma pasta e não fazem parte deste
+motoristas/
+limpar_tmp.sh
+/go.mod
