@@ -28,7 +28,8 @@ const textoAjuda = `Olá! Comandos disponíveis:
 /banidos — IPs banidos
 /desbanir <ip> — remove o ban de um IP
 /top — 10 IPs com mais bloqueios hoje
-/relatorio — gera e envia o relatório agora`
+/relatorio — gera e envia o relatório agora
+/painel — CPU, RAM, disco, serviços, Docker e certificados`
 
 // ehSaudacao diz se o texto é só um cumprimento ("oi", "Olá!", "bom dia"...).
 func ehSaudacao(texto string) bool {
@@ -72,6 +73,8 @@ func (b *Bot) comando(m *Mensagem) {
 		b.cmdTop()
 	case "/relatorio":
 		b.cmdRelatorio()
+	case "/painel":
+		b.cmdPainel()
 	case "/start":
 		b.saudar()
 	default: // inclui /ajuda
@@ -285,6 +288,7 @@ var comandosMenu = []struct {
 	{"desbanir", "remove o ban de um IP (/desbanir 1.2.3.4)"},
 	{"top", "os 10 IPs com mais bloqueios hoje"},
 	{"relatorio", "gera e envia o relatório agora"},
+	{"painel", "estado da VPS: CPU, RAM, disco, serviços e TLS"},
 	{"ajuda", "mostra os comandos disponíveis"},
 }
 
@@ -328,7 +332,8 @@ const tecladoSaudacao = `{"inline_keyboard":[[` +
 	`{"text":"📊 Status","callback_data":"menu:status"},` +
 	`{"text":"🚫 Banidos","callback_data":"menu:banidos"}],[` +
 	`{"text":"🏆 Top de hoje","callback_data":"menu:top"},` +
-	`{"text":"📄 Relatório","callback_data":"menu:relatorio"}]]}`
+	`{"text":"📄 Relatório","callback_data":"menu:relatorio"}],[` +
+	`{"text":"🖥️ Painel da VPS","callback_data":"menu:painel"}]]}`
 
 func (b *Bot) saudar() {
 	b.mensagemComBotoes(textoSaudacao(b.now()), tecladoSaudacao)
@@ -346,5 +351,7 @@ func (b *Bot) atalho(cq *CallbackQuery, acao string) {
 		b.cmdTop()
 	case "relatorio":
 		b.cmdRelatorio()
+	case "painel":
+		b.cmdPainel()
 	}
 }

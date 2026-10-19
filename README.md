@@ -107,3 +107,24 @@ cd ../ufwrelatorio && go test ./...
 
 O que foi feito e o que falta está em [EVOLUIR.md](EVOLUIR.md). Ideias de outros bots em
 [OUTROS_BOTS.md](OUTROS_BOTS.md).
+
+## Monitor da VPS
+
+O `ufwbot` também vigia a máquina e avisa no Telegram (configuração em `.env.example`, variáveis `MON_*`):
+
+- **CPU, RAM e disco** acima do limite (CPU/RAM só depois de `MON_SUSTENTADO`; avisa também quando normaliza).
+- **Serviços** do systemd (PostgreSQL, Redis, Docker, Nginx por padrão) e **containers** com erro/unhealthy.
+- **Certificados TLS** que vencem em até `MON_TLS_DIAS` dias, ou que ficaram inválidos.
+- **Reinício** da VPS ou do próprio bot, com o tempo que ficou sem sinal.
+- `/painel` mostra tudo num botão "🔄 Atualizar".
+
+**Deploy:** no fim do script de deploy (precisa ler o `/etc/ufwrelatorio.env`, ou seja, rodar como root):
+
+```bash
+set -a; . /etc/ufwrelatorio.env; set +a
+./ufwbot deploy minha-api ok "v1.4.2"      # ou: falha "testes quebraram"
+```
+
+**Limite:** o monitor roda dentro da VPS, então não consegue avisar que ela caiu — só que *voltou* (aviso de reinício).
+Para saber da queda em si, use `MON_URLS` com um segundo monitor externo (ex.: UptimeRobot) ou outra máquina.
+Para o Docker, o usuário do bot precisa poder rodar `docker ps` (rodando como root já pode).

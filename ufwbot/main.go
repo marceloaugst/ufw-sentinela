@@ -85,6 +85,8 @@ type Bot struct {
 	ultimoAlerta                            map[string]time.Time
 	enviados                                []time.Time
 	avisouLimite                            bool
+
+	mon *Monitor // monitor da VPS (nil = desligado)
 }
 
 func main() {
@@ -103,6 +105,9 @@ func main() {
 		ufw:              rodarUfw,
 		logUfw:           envOu("UFW_LOG", "/var/log/ufw.log"),
 		cli:              &http.Client{Timeout: 45 * time.Second},
+	}
+	if len(os.Args) > 1 {
+		os.Exit(b.subcomando(os.Args[1:]))
 	}
 	b.arquivoBans = envOu("UFW_BANS", filepath.Join(filepath.Dir(b.arquivoPendentes), "bans.json"))
 	if b.duracaoCurta, err = parseDuracao(envOu("UFW_DURACAO_CURTA", "24h")); err != nil {
@@ -140,6 +145,12 @@ func main() {
 	if b.autoLimite > 0 || b.alertaPico > 0 || b.alertaPortas > 0 || b.alertasSSH {
 		go b.rotinaVarredura()
 		log.Printf("varredura dos logs ligada (ban automático: >%d em %s)", b.autoLimite, b.autoJanela)
+	}
+	if b.mon, err = novoMonitor(b); err != nil {
+		log.Fatal(err)
+	}
+	if b.mon != nil {
+		go b.mon.rodar()
 	}
 	b.relatorio = b.rodarRelatorio(envOu("UFW_RELATORIO_BIN", "./ufwrelatorio"))
 	for _, ip := range strings.Split(os.Getenv("UFW_NUNCA_BANIR"), ",") {
@@ -202,6 +213,11 @@ func (b *Bot) processar(u Update) {
 	acao, id, ok := strings.Cut(cq.Data, ":")
 	if acao == "menu" && ok {
 		b.atalho(cq, id)
+		return
+	}
+	if acao == "painel" && ok {
+		b.responder(cq, "")
+		b.editarPainel(cq)
 		return
 	}
 	if acao == "desfazer" && ok {

@@ -2,7 +2,7 @@
 
 Marque o que quiser fazer. Esforço: baixo / médio / alto.
 
-## Monitor do servidor — esforço baixo
+## Monitor do servidor — esforço baixo (feito no ufwbot, veja README)
 - CPU, disco, RAM, serviços caídos (`systemctl`), certificado SSL perto de vencer
 - Comandos sob demanda: `/df`, `/uptime`, `/servicos`
 - Alerta automático quando passar de um limite (ex.: disco > 90%)
